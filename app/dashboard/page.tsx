@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { useTheme } from "next-themes";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -15,6 +16,8 @@ export default function Dashboard() {
     { id: 3, name: "Java Programming Concepts and Examples", type: "docx", lastOpened: "7 days ago" },
   ]);
   const [dragOver, setDragOver] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -24,6 +27,10 @@ export default function Dashboard() {
     });
     return () => unsubscribe();
   }, [router]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => {
     let file: File | null = null;
@@ -138,59 +145,72 @@ export default function Dashboard() {
       )}
 
       {/* MAIN CONTENT */}
-      <div style={{ paddingTop: '80px', minHeight: '100vh', background: '#f5f5f5' }}>
-        {/* HEADER */}
-        <header style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '80px',
-          background: 'white',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 20px',
-          zIndex: 1000
-        }}>
-          <button
-            onClick={() => {
-              console.log('🔥 MENU TOGGLE');
-              setIsMenuOpen(!isMenuOpen);
-            }}
-            style={{
-              background: '#101011ff',
-              color: 'white',
-              border: 'none',
-              padding: '12px 20px',
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}
-          >
-            ☰ MENU
-          </button>
-          
-          <h1 style={{ 
-            marginLeft: '20px', 
-            fontSize: '28px', 
-            fontWeight: 'bold', 
-            color: '#333' 
-          }}>
-            learnisle
-          </h1>
-        </header>
+      <div style={{ paddingTop: '80px', minHeight: '100vh', background: theme === 'dark' ? '#282727ff':'f5f5f5' }}>
+      {/* HEADER */}
+<     header style={{
+       position: 'fixed',
+      top: 0, left: 0, right: 0,
+      height: '80px',
+      background: 'white',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+      display: 'flex',
+      alignItems: 'center',
+      padding: '0 20px',
+      zIndex: 1000
+   }}>
+     <button
+      onClick={() => {
+       console.log('🔥 MENU TOGGLE');
+       setIsMenuOpen(!isMenuOpen);
+    }}
+    style={{
+      background: theme === 'dark' ? '#38385bff' : '#f0f0f0',
+      color: theme === 'dark' ? 'white' : '#333',
+      border: 'none',
+      padding: '12px 20px',
+      borderRadius: '8px',
+      fontSize: '16px',
+      fontWeight: 'bold',
+      cursor: 'pointer'
+    }}
+  >
+    ☰ MENU
+   </button>
+  
+   <h1 style={{ 
+    marginLeft: '20px', 
+    fontSize: '28px', 
+    fontWeight: 'bold', 
+    color: theme === 'dark' ? 'white' : '#a57373ff'  // ← Black light, white dark
+   }}>
+    learnisle
+  </h1>
+
+  {/* THEME TOGGLE BUTTON - right corner */}
+  {mounted && (
+    <button
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      style={{
+        marginLeft: 'auto',
+        padding: '8px 12px',
+        borderRadius: '50%',
+        background: theme === 'dark' ? '#080808ff' : '#f0f0f0',
+        border: '1px solid rgba(0,0,0,0.1)',
+        cursor: 'pointer',
+        fontSize: '18px'
+      }}
+    >
+      {theme === 'dark' ? '☀️' : '🌙'}
+    </button>
+  )}
+</header>
 
         {/* MAIN CONTENT AREA */}
         <div style={{ padding: '120px 20px 40px', maxWidth: '800px', margin: '0 auto' }}>
           {/* LARGER DRAG & DROP UPLOAD ZONE */}
           <div 
             style={{
-              border: dragOver ? '3px dashed #2196f3' : '2px dashed #ccc',
+              border: dragOver ? '3px dashed #2196f3' : '2px dashed #a5a3a3ff',
               borderRadius: '20px',
               padding: '40px 30px',
               textAlign: 'center',
@@ -225,7 +245,7 @@ export default function Dashboard() {
           <div style={{ 
             marginBottom: '20px',
             paddingBottom: '15px',
-            borderBottom: '2px solid #e0e0e0'
+            borderBottom: '2px solid #a5a3a3ff'
           }}>
             <h2 style={{ 
               fontSize: '22px', 
