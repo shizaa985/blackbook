@@ -7,10 +7,22 @@ import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useTheme } from "next-themes";
 
+type FileItem = {
+  id: number;
+  name: string;
+  type: string;
+  lastOpened: string;
+  status?: string;
+  textPreview?: string;
+  aiSummary?: string;
+  fullTextLength?: number;
+};
+
+
 export default function Dashboard() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [files, setFiles] = useState([
+  const [files, setFiles] = useState <FileItem[]>([
     { id: 1, name: "UML, Data Modeling, and V-Model Testing", type: "pdf", lastOpened: "1 day ago" },
     { id: 2, name: "Java Basic Syntax and Constructs", type: "pdf", lastOpened: "3 days ago" },
     { id: 3, name: "Java Programming Concepts and Examples", type: "docx", lastOpened: "7 days ago" },
@@ -33,27 +45,67 @@ export default function Dashboard() {
     setMounted(true);
   }, []);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => {
-    let file: File | null = null;
+const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => {
+  let file: File | null = null;
+  
+  if ('dataTransfer' in e && (e as React.DragEvent).dataTransfer) {
+    file = (e as React.DragEvent).dataTransfer.files[0];
+  } else if ('target' in e && (e as React.ChangeEvent<HTMLInputElement>).target) {
+    file = (e as React.ChangeEvent<HTMLInputElement>).target.files?.[0] || null;
+  }
+  
+  if (file && file.type === 'application/pdf') {
+    // Show processing status
+    setFiles(prev => [{ 
+      id: Date.now(), 
+      name: file!.name, 
+      type: 'pdf', 
+      status: 'Processing...', 
+      lastOpened: 'Now' 
+    }, ...prev]);
     
-    if ('dataTransfer' in e && (e as React.DragEvent).dataTransfer) {
-      file = (e as React.DragEvent).dataTransfer.files[0];
-    } else if ('target' in e && (e as React.ChangeEvent<HTMLInputElement>).target) {
-      file = (e as React.ChangeEvent<HTMLInputElement>).target.files?.[0] || null;
-    }
+    // Send to your API
+    const formData = new FormData();
+    formData.append('pdf', file);
     
-    if (file) {
-      setDragOver(false);
-
-      const newFile = {
-        id: Date.now(),
-        name: file.name,
-        type: file.name.split('.').pop()?.toLowerCase() || 'unknown',
-        lastOpened: 'Just now'
-      };
-      setFiles(prev => [newFile, ...prev]);
+    try {
+      const res = await fetch('/api/process-pdf', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        // Update with AI results
+        setFiles(prev => prev.map(f => 
+          f.name === file!.name 
+            ? { 
+                ...f, 
+                status: '✅ AI Ready', 
+                textPreview: data.text, 
+               aiSummary: data.ai_summary || '',
+               fullTextLength: data.full_text_length || 0
+              }
+            : f
+        ));
+        
+        console.log('🎉 PDF processed:', data);
+        alert(`PDF processed! ${data.text?.substring(0, 100)}...`);
+      } else {
+        throw new Error(data.error || 'API failed');
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      setFiles(prev => prev.map(f => 
+        f.name === file!.name ? { ...f, status: '❌ Failed' } : f
+      ));
+      alert('Upload failed - check console');
     }
-  };
+  } else {
+    alert('Please upload a PDF file only');
+  }
+}
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
