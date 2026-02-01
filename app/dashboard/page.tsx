@@ -16,7 +16,8 @@ export default function Dashboard() {
     { id: 3, name: "Java Programming Concepts and Examples", type: "docx", lastOpened: "7 days ago" },
   ]);
   const [dragOver, setDragOver] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === 'dark';
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -42,13 +43,15 @@ export default function Dashboard() {
     }
     
     if (file) {
+      setDragOver(false);
+
       const newFile = {
         id: Date.now(),
         name: file.name,
         type: file.name.split('.').pop()?.toLowerCase() || 'unknown',
         lastOpened: 'Just now'
       };
-      setFiles([newFile, ...files]);
+      setFiles(prev => [newFile, ...prev]);
     }
   };
 
@@ -145,9 +148,9 @@ export default function Dashboard() {
       )}
 
       {/* MAIN CONTENT */}
-      <div style={{ paddingTop: '80px', minHeight: '100vh', background: theme === 'dark' ? '#282727ff':'f5f5f5' }}>
+      <div style={{ paddingTop: '80px', minHeight: '100vh', background: isDark ? '#282727ff':'#f5f5f5' }}>
       {/* HEADER */}
-<     header style={{
+<header style={{
        position: 'fixed',
       top: 0, left: 0, right: 0,
       height: '80px',
@@ -164,8 +167,8 @@ export default function Dashboard() {
        setIsMenuOpen(!isMenuOpen);
     }}
     style={{
-      background: theme === 'dark' ? '#38385bff' : '#f0f0f0',
-      color: theme === 'dark' ? 'white' : '#333',
+      background: isDark ? '#38385bff' : '#f0f0f0',
+      color: isDark ? 'white' : '#333',
       border: 'none',
       padding: '12px 20px',
       borderRadius: '8px',
@@ -181,7 +184,7 @@ export default function Dashboard() {
     marginLeft: '20px', 
     fontSize: '28px', 
     fontWeight: 'bold', 
-    color: theme === 'dark' ? 'white' : '#a57373ff'  // ← Black light, white dark
+    color: isDark ? 'white' : '#a57373ff'  // ← Black light, white dark
    }}>
     learnisle
   </h1>
@@ -189,12 +192,12 @@ export default function Dashboard() {
   {/* THEME TOGGLE BUTTON - right corner */}
   {mounted && (
     <button
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
       style={{
         marginLeft: 'auto',
         padding: '8px 12px',
         borderRadius: '50%',
-        background: theme === 'dark' ? '#080808ff' : '#f0f0f0',
+        background: isDark ? '#080808ff' : '#f0f0f0',
         border: '1px solid rgba(0,0,0,0.1)',
         cursor: 'pointer',
         fontSize: '18px'
@@ -232,14 +235,16 @@ export default function Dashboard() {
               style={{ display: 'none' }} 
               accept=".pdf,.doc,.docx"
             />
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📄</div>
+            <div style={{ fontSize: '48px', marginBottom: '16px' 
+        
+            }}>📄</div>
             <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#333', marginBottom: '12px' }}>
               Drop PDF here or click to upload
             </div>
             <div style={{ fontSize: '16px', color: '#666' }}>
               Your files will appear in My Files below
             </div>
-          </div>
+          </div> 
 
           {/* MY FILES SECTION */}
           <div style={{ 
