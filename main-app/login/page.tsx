@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-// If you have @mui/material installed, you can use its Button, Input, and Label components:
-import Button from "@mui/material/Button";
-import Input from "@mui/material/Input";
-import InputLabel as Label from "@mui/material/InputLabel";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // import Firebase
 import { auth, provider } from "@/lib/firebase";

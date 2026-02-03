@@ -1,10 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['pdf2json'],  // ← ADD THIS LINE
-  },
+  serverExternalPackages: ["pdf-parse"], // allow pdf-parse in server routes
 };
 
 export default nextConfig;
+
 
